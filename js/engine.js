@@ -13,7 +13,7 @@
  * writing app.js a little simpler to work with.
  */
 
-var Engine = (function(global) {
+(function(global) {
     /* Predefine the variables we'll be using within this scope,
      * create the canvas element, grab the 2D context for that canvas
      * set the canvas element's height/width and add it to the DOM.
@@ -24,8 +24,9 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
-    canvas.width = 505;
-    canvas.height = 606;
+    canvas.width = gameProps.fieldWidth;
+    canvas.height = gameProps.fieldHight;
+    
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -82,6 +83,15 @@ var Engine = (function(global) {
         // checkCollisions();
     }
 
+    function checkCollisions() {
+        allEnemies.forEach(function(enemy) {
+            if (Math.round(player.x) < Math.round(enemy.x) + 70
+                && Math.round(player.x) > Math.round(enemy.x) - 70) {
+                alert('stop')
+            }
+         });
+    }
+
     /* This is called by the update function and loops through all of the
      * objects within your allEnemies array as defined in app.js and calls
      * their update() methods. It will then call the update function for your
@@ -91,7 +101,7 @@ var Engine = (function(global) {
      */
     function updateEntities(dt) {
         allEnemies.forEach(function(enemy) {
-            enemy.update(dt);
+           enemy.update(dt);
         });
         player.update();
     }
@@ -111,11 +121,12 @@ var Engine = (function(global) {
                 'images/stone-block.png',   // Row 1 of 3 of stone
                 'images/stone-block.png',   // Row 2 of 3 of stone
                 'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png',   // Row 1 of 2 of grass
+                'images/stone-block.png',   // Row 1 of 2 of grass
+                'images/grass-block.png',    // Row 2 of 2 of grass
                 'images/grass-block.png'    // Row 2 of 2 of grass
             ],
-            numRows = 6,
-            numCols = 5,
+            numRows = 7,
+            numCols = 8,
             row, col;
 
         // Before drawing, clear existing canvas
