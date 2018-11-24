@@ -1,3 +1,72 @@
 body {
+    font-size: 20px;
+    font-family: sans-serif;
+    position: relative;
     text-align: center;
+    color: 333;
+}
+
+.info {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.scores {
+    margin-right: 30px
+}
+
+.canvas p {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 16px;
+}
+.game-over-title {font-size: 24px;}
+.modal {
+    position: absolute;
+    top: 50%;
+    border-radius: 2px;
+    width: 400px;
+    height: 200px;
+    background: #fff;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.3);
+    transition: all 200ms ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0) translateY(-100%);
+}
+
+.modal-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) translateY(-100%);
+}
+
+.modal a {
+    margin-top: 10px;
+    border-radius: 2px;
+    display: inline-block;
+    text-decoration: none;
+    border: 1px solid #aaa;
+    padding: 8px 20px;
+    color: #000;
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.13);
+    transition: all 200ms ease-in-out;
+    font-size: 16px;
+
+}
+
+.modal a:hover {
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);
+    transform: translateY(1px);
+
 }

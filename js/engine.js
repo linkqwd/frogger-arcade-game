@@ -18,16 +18,15 @@
      * create the canvas element, grab the 2D context for that canvas
      * set the canvas element's height/width and add it to the DOM.
      */
-    var doc = global.document,
-        win = global.window,
-        canvas = doc.createElement('canvas'),
+    var canvas = document.createElement('canvas'),
         ctx = canvas.getContext('2d'),
-        lastTime;
+        lastTime,
+        drawAnimation = true;
 
     canvas.width = gameProps.fieldWidth;
     canvas.height = gameProps.fieldHight;
 
-    doc.body.appendChild(canvas);
+    document.querySelector('.canvas').appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
@@ -56,7 +55,8 @@
         /* Use the browser's requestAnimationFrame function to call this
          * function again as soon as the browser is able to draw another frame.
          */
-        win.requestAnimationFrame(main);
+        if (drawAnimation === true) requestAnimationFrame(main);
+
     }
 
     /* This function does some initial setup that should only occur once,
@@ -64,7 +64,6 @@
      * game loop.
      */
     function init() {
-        reset();
         lastTime = Date.now();
         main();
     }
@@ -80,23 +79,66 @@
      */
     function update(dt) {
         updateEntities(dt);
-        checkCollisions();
+        checkSubjectCollissions();
     }
 
-    function checkCollisions() {
+    function checkSubjectCollissions() {
+        allCollectables.forEach(function (collectableItem) {
+            if (player.y === collectableItem.y && player.x === collectableItem.x) {
+                handleCollection(collectableItem);
+            }
+        });
+
         allEnemies.forEach(function (enemy) {
             if (player.y === enemy.y) {
-
-                if ((Math.round(player.x) < Math.round(enemy.x) + 70
-                    && Math.round(player.x) > Math.round(enemy.x) - 70)) {
-
-                    console.log('collision');
-                    
-
+                if (
+                    (Math.round(player.x) < Math.round(enemy.x) + 65
+                        && Math.round(player.x) > Math.round(enemy.x) - 65)
+                ) {
+                    handleCollision();
                 }
             }
+        });
+    }
 
+    function handleCollision() {
+        drawAnimation = false;
+        gameProps.health--;
+        gameProps.scores--;
+        UI.updateScores()
+        if (gameProps.health < 0) {
+            UI.showModal();
+            UI.updateTotalScore();
+            document.removeEventListener("keyup", handleKeyUp);
+            return;
+        }
+        UI.updateHelath()
 
+        setTimeout(function () {
+            player.x = player.getXlocation(Math.round(gameProps.numCols / 2));
+            player.y = player.getYlocation(gameProps.numRows);
+            drawAnimation = true;
+            init()
+        }, 175);
+    }
+
+    function handleCollection(collectableItem) {
+        if (collectableItem.type === 'heart') {
+            gameProps.health++;
+            UI.updateHelath()
+        } else if (collectableItem.type === 'raid') {
+            for (var i = 0; i < gameProps.raidPower; i++) {
+                 allEnemies[getRandom(0, allEnemies.length)] = false;
+                 allEnemies = allEnemies.filter(function(el) {
+                    if (el) return el;
+                 });
+            }
+        };
+
+        var indexOfCollectableItem = allCollectables.indexOf(collectableItem);
+        allCollectables[indexOfCollectableItem] = false;
+        allCollectables = allCollectables.filter(function (el) {
+            if (el) return el
         });
     }
 
@@ -124,18 +166,20 @@
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
-        var rowImages = [
-            'images/water-block.png',   // Top row is water
-            'images/stone-block.png',   // Row 1 of 3 of stone
-            'images/stone-block.png',   // Row 2 of 3 of stone
-            'images/stone-block.png',   // Row 3 of 3 of stone
-            'images/stone-block.png',   // Row 1 of 2 of grass
-            'images/grass-block.png',    // Row 2 of 2 of grass
-            'images/grass-block.png'    // Row 2 of 2 of grass
-        ],
-            numRows = 7,
-            numCols = 8,
+        var rowImages = [],
+            numRows = gameProps.numRows,
+            numCols = gameProps.numCols,
             row, col;
+
+        for (let i = 0; i < gameProps.waterBlockRows; i++) {
+            rowImages.push('images/water-block.png');
+        }
+        for (let i = 0; i < gameProps.stoneBlockRows; i++) {
+            rowImages.push('images/stone-block.png');
+        }
+        for (let i = 0; i < gameProps.grassBlockRows; i++) {
+            rowImages.push('images/grass-block.png');
+        }
 
         // Before drawing, clear existing canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -153,7 +197,7 @@
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                  */
-                ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
+                ctx.drawImage(Resources.get(rowImages[row]), col * gameProps.pieceWidth, row * gameProps.pieceHeight);
             }
         }
 
@@ -168,6 +212,10 @@
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
+        allCollectables.forEach(function (collectableItem) {
+            collectableItem.render();
+        });
+
         allEnemies.forEach(function (enemy) {
             enemy.render();
         });
@@ -175,13 +223,7 @@
         player.render();
     }
 
-    /* This function does nothing but it could have been a good place to
-     * handle game reset states - maybe a new game menu or a game over screen
-     * those sorts of things. It's only called once by the init() method.
-     */
-    function reset() {
-        // noop
-    }
+
 
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
@@ -192,7 +234,9 @@
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/Heart.png',
+        'images/Raid.png'
     ]);
     Resources.onReady(init);
 
